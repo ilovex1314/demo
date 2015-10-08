@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>扫雷</title>
+	<style type="text/css">
+		*{
+			padding:0;
+			margin:0;
+		}
+		span{
+			color: red;!important
+			z-index: 2;
+		}
+		table{
+			/*color: #ccc;*/
+			border-spacing: 2px;
+			color: black;
+		}
+		td{
+			border:1px solid #ccc;
+			width: 20px;
+			height: 20px;
+			/*background-color: #ccc;*/
+			z-index: 1;
+			/*cursor:hand;*/
+		}
+		button{
+			font-size: 20px;
+		}
+		.know{
+			/*background-color: white;!important*/
+			opacity: 0;
+		}
+		.table2{
+			/*display: none;*/
+			position: absolute;
+			top: 0px;
+			left: 0px;
+		}
+		.table2 td{
+			background-color: #ccc;
+		}
+		#begin{
+			display: none;
+			font-size: 80px;
+			position: absolute;
+			top:50px;
+			left: 300px;
+		}
+	</style>
+	<script type="text/javascript">
+		window.onload=function(){
+			var str="";
+			var n=0;
+			var totle = 0;
+			function Lei(x,y){
+				this.x=x;
+				this.y=y;
+				this.flag=false;
+			}
+			var begin = document.getElementById("begin");
+			// var font = document.getElementsByTagName("table")[0];
+			var outside = document.getElementsByTagName("table")[1];
+			var gameBegin=document.getElementsByTagName("button")[0];
+			var gameEnd=document.getElementsByTagName("button")[1];
+			gameBegin.onclick=function(){
+				init();
+				gameBegin();
+				begin.style.display="block";
+			}
+			var table=new Array(10);
+			for(var i=0; i<10; i++){
+				table[i]=new Array(10);
+			}
+			for(var i=0; i<10; i++){
+				for(var j=0; j<10; j++){
+					table[i][j]=document.getElementsByTagName("td")[n];
+					n++;
+				}
+			}
+			var table2=new Array(10);
+			for(var i=0; i<10; i++){
+				table2[i]=new Array(10);
+			}
+			for(var i=0; i<10; i++){
+				for(var j=0; j<10; j++){
+					table2[i][j]=document.getElementsByTagName("td")[n];
+					n++;
+				}
+			}
+			for(var i=0; i<10; i++){
+				for(var j=0; j<10; j++){
+
+					(function (i,j){
+						//点击左键试探地雷
+							table2[i][j].onclick=function(){
+								if(table2[i][j].innerText != 'x'){
+									if(table[i][j].innerText=="雷"){
+										alert("不好意思，你触雷了");
+										// font.style.color="black";
+										// outside.style.display="none";
+										check();
+									}else{
+										// alert("hi");
+										fun(i,j);
+									}
+								}
+							}
+						//点击右键标记地雷
+							table2[i][j].oncontextmenu=function(){
+								if(table2[i][j].innerText == 'x'){
+									table2[i][j].innerText = '';
+									totle--;
+								}else{
+									if(totle < 10){
+										table2[i][j].innerHTML = '<span>x</span>';
+										totle++;
+									}else{
+										alert("超过标记数量");
+									}	
+								}
+								return false;
+							}
+					}(i,j));
+				}
+			}
+			//初始化函数
+			var init = function(){
+				for(var i=0; i<10; i++){
+					for(var j=0; j<10; j++){
+						table[i][j].innerText = '';
+						outside.style.display="block";
+						table2[i][j].className = '';
+						table2[i][j].innerText = '';
+						table[i][j].style.cssText = " text-decoration :none;"
+						begin.innerText = '开始';
+					}
+				}
+			}
+			//随机初始化雷分布
+			var creat=function(){
+				var lei=new Lei(Math.floor(Math.random()*10),Math.floor(Math.random()*10));
+				return lei;
+			}
+			//随机产生10颗雷
+			var gameBegin=function(){
+				var l=new Array(10);
+				var gameBeginin = function(i){
+					l[i] = creat();
+					if(table[l[i].x][l[i].y].innerText == '雷'){
+						// alert('hi');
+						gameBeginin(i);
+					}else{
+						table[l[i].x][l[i].y].innerText = '雷';
+					}
+				}
+				for(i=0; i<10; i++){
+					// l[i] = creat();
+					// var text = document.createTextNode("雷");
+				    // table[l[i].x][l[i].y].appendChild(text);
+				    // if(table[l[i].x][l[i].y].innerText == '雷'){
+				    // 	l[i] = creat();
+				    // }
+				    gameBeginin(i);
+				}
+				for(var i = 0; i < 10; i++){
+					for(var j = 0; j < 10 ;j++){
+						str=count(i,j)+"";
+						table[i][j].innerText=str;
+					}
+				}
+				
+			}
+			//计算点击点周围的雷数
+			var count=function(tx,ty){
+				var counts=0;
+				var starx=tx-1;
+				var stary=ty-1;
+				var endx=tx+2;
+				var endy=ty+2;
+				if(table[tx][ty].innerText == '雷'){
+					return '雷';
+				}else{
+					if(tx==0){
+						starx=0;
+						endx=tx+2;
+					}
+					if(tx==9){
+						starx=tx-1;
+						endx=9;
+					}
+					if(ty==0){
+						stary=0;
+						endy=ty+2;
+					}
+					if(ty==9){
+						stary=ty-1;
+						endy=9;
+					}
+					for(i=starx; i<endx; i++){
+						for(j=stary; j<endy; j++){
+							if(table[i][j].innerText=="雷"){
+								counts++;
+							}
+						}
+					}
+					if(counts==0){
+						counts = "";
+					}
+					return counts;
+				}
+			}
+			//扩展函数
+			var fun=function(i,j){
+				if(i==-1||i==10||j==-1||j==10){
+					return;
+				}else{
+					if(table[i][j].innerText=='' && table2[i][j].className != "know"){
+						table2[i][j].className="know";
+						fun(i-1,j);
+						fun(i+1,j);
+						fun(i,j-1);
+						fun(i,j+1);
+					}else if(table[i][j].innerText!='雷'){
+						table2[i][j].className="know";
+					}else{
+						return;
+					}
+				}	
+			}
+			//检测函数
+			var check = function(){
+				var all = 0;
+				outside.style.display="none";
+				for(var i = 0; i < 10; i++){
+					for(var j = 0; j < 10; j++){
+						// table[i][j].className = "know";
+						if(table2[i][j].innerText == 'x' && table[i][j].innerText == '雷'){
+							all++;
+							table[i][j].style.cssText = " text-decoration :line-through;"
+						}
+					}
+				}
+				if(all == 10){
+					begin.innerText = '胜利';
+				}else{
+					begin.innerText = '您找到了'+all+'颗雷,失败';
+				}
+			}
+			gameEnd.onclick = function(){
+				check();
+			}
+		}
+	</script>
+</head>
+<body>
+	<table>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+	</table>
+	<table class="table2">
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+	</table>
+	<button>开始游戏</button>
+	<button>验证</button>
+	<div id="begin">开始</div>
+</body>
+</html>
